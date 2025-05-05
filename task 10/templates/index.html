@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chatbot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .chat-box {
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans flex flex-col items-center min-h-screen p-4">
+
+  <div class="w-full max-w-2xl bg-white shadow-xl rounded-2xl p-6">
+    <h1 class="text-3xl font-bold mb-4 text-center text-blue-600">AI Chatbot</h1>
+
+    <div id="chat-box" class="chat-box space-y-4 mb-4 overflow-y-auto">
+      <!-- Chat messages will appear here -->
+    </div>
+
+    <form id="chat-form" class="flex gap-2">
+      <input
+        type="text"
+        id="user-input"
+        name="msg"
+        class="flex-grow p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+        placeholder="Ask me anything..."
+        required
+      />
+      <button
+        type="submit"
+        class="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition"
+      >
+        Send
+      </button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById("chat-form");
+    const userInput = document.getElementById("user-input");
+    const chatBox = document.getElementById("chat-box");
+
+    function appendMessage(sender, message) {
+      const messageDiv = document.createElement("div");
+      messageDiv.classList.add("p-3", "rounded-xl", "max-w-[80%]");
+
+      if (sender === "user") {
+        messageDiv.classList.add("bg-blue-100", "self-end", "ml-auto");
+      } else {
+        messageDiv.classList.add("bg-gray-200", "self-start", "mr-auto");
+      }
+
+      messageDiv.textContent = message;
+      chatBox.appendChild(messageDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = userInput.value.trim();
+      if (!msg) return;
+
+      appendMessage("user", msg);
+      userInput.value = "";
+
+      const res = await fetch("/get", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({ msg }),
+      });
+
+      const data = await res.json();
+      appendMessage("bot", data.response);
+    });
+  </script>
+</body>
+</html>
